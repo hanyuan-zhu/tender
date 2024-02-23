@@ -12,6 +12,10 @@ def init_driver():
     options = Options()
     if HEADLESS:
         options.add_argument('--headless')
+    options.add_argument('--no-sandbox')  # 绕过OS安全模型
+    options.add_argument('--disable-dev-shm-usage')  # 解决资源限制问题
+    options.add_argument('--disable-gpu')  # 禁用GPU加速，某些情况下有帮助
+
     driver = webdriver.Chrome(service=service, options=options)
     return driver
 
