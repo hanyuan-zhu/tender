@@ -1,4 +1,4 @@
-from database_util import connect_db, insert_detail_data,update_fetched_status
+from database_util import connect_db, insert_detail_data,update_fetched_status,get_unfetched_tender_info
 from webdriver_util import init_driver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -15,8 +15,7 @@ def fetch_and_save_detail_info():
     cursor = connection.cursor()
 
     print("Fetching tenders from database...")
-    cursor.execute("SELECT id, detail_link FROM tender_info WHERE detail_info_fetched = FALSE")
-    tenders = cursor.fetchall()
+    tenders = get_unfetched_tender_info(cursor)
 
     for tender in tenders:
         tender_id, detail_link = tender
