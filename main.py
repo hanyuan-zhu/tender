@@ -5,6 +5,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from datetime import datetime
+from selenium.common.exceptions import TimeoutException
+
 import time
 
 def crawl_data(driver):
@@ -14,7 +16,10 @@ def crawl_data(driver):
     wait = WebDriverWait(driver, 10)
     wait.until(lambda driver: driver.find_element(By.CSS_SELECTOR, "#search_topleft b").text != old_record_count)
     
-    total_pages = int(driver.find_element(By.CSS_SELECTOR, ".paging .count").text.split(' ')[1])
+    total_pages_elements = driver.find_elements(By.CSS_SELECTOR, ".paging .count")
+    # 注意：这里我们假设总页数总是在最后一个 ".paging .count" 元素中。
+    # 如果网页结构改变，这可能不再成立，需要重新检查和调整这部分代码。
+    total_pages = int(total_pages_elements[-1].text.split(' ')[1])    
     current_page = 1
     connection = connect_db()
     if connection:
@@ -22,6 +27,8 @@ def crawl_data(driver):
         try:
             while current_page <= total_pages:
                 tenders = driver.find_elements(By.CSS_SELECTOR, '.publicont')
+                print(f"Page {current_page} has {len(tenders)} tenders.")
+                
                 page_has_existing_data = False
                 
                 for tender in tenders:
@@ -50,11 +57,20 @@ def crawl_data(driver):
                     print("Existing data found on current page, stopping.")
                     break
                 
-                if current_page < total_pages:
-                    next_page_link = f"javascript:getList({current_page + 1})"
-                    driver.execute_script(next_page_link)
-                    current_page += 1
-                    time.sleep(2)  # 等待页面加载，可根据实际情况调整
+                current_page += 1
+                print(f"Moving to page {current_page}...")
+                if current_page > total_pages:
+                    break
+
+                next_page_link = f"javascript:getList({current_page})"
+                driver.execute_script(next_page_link)
+                try:
+                    # 注意：这里我们假设页面加载成功时，对应的链接元素会包含 "a_hover" 类。
+                    # 如果网页结构改变，这可能不再成立，需要重新检查和调整这部分代码。
+                    WebDriverWait(driver, 10).until(lambda driver: "a_hover" in driver.find_element(By.CSS_SELECTOR, f'a[href="{next_page_link}"]').get_attribute("class"))
+                    print("Page loaded successfully.")
+                except TimeoutException:
+                    print("Timeout while waiting for page to load.")
         finally:
             cursor.close()
             connection.close()
