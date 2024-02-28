@@ -97,3 +97,47 @@ def update_cleaned_html(cursor, cleaned_html, id):
     WHERE id = %s
     """
     cursor.execute(update_query, (cleaned_html, id))
+
+
+def get_cleaned_html(cursor, id):
+    """
+    从数据库中获取清洗后的HTML。
+
+    参数:
+    cursor -- 数据库游标
+    id -- 要获取的记录的id
+
+    返回值:
+    清洗后的HTML
+    """
+    select_query = f"""
+    SELECT cleaned_detail_html
+    FROM {TENDER_DETAIL_TABLE_NAME}
+    WHERE tender_id = %s
+    """
+    cursor.execute(select_query, (id,))
+    return cursor.fetchone()[0]
+
+
+def insert_detail_data(data):
+    """
+    将招标详细信息插入到数据库中。
+    参数:
+    - data: 要插入的数据，预期为一个元组，包含所有必要的招标详细信息字段。
+    """
+    connection = connect_db()
+    if connection is not None:
+        try:
+            cursor = connection.cursor()
+            insert_query = f"""
+            INSERT INTO {TENDER_DETAIL_TABLE_NAME} (tender_id, tender_document_start_time, tender_document_end_time, question_deadline, answer_announcement_time, bid_submission_deadline, bid_opening_time, tenderer, tender_contact, contact_phone, tender_agency, tender_agency_contact, tender_agency_contact_phone, supervision_qualification_requirement, business_license_requirement, chief_supervisor_qualification_requirement, consortium_bidding_requirement, project_name, investment_project_code, tender_project_name, implementation_site, funding_source, tender_scope_and_scale, duration, maximum_bid_price, qualification_review_method)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """
+            cursor.execute(insert_query, data)
+            connection.commit()
+        except Error as e:
+            print(f"Error: {e}")
+            connection.rollback()
+        finally:
+            cursor.close()
+            connection.close()
