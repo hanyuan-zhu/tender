@@ -24,13 +24,14 @@ def gethtml(tender_id):
 
 from zhipuai import ZhipuAI
 import json
+import re
 
 def getFormatedData(cleanedHtml):
     client = ZhipuAI(api_key="8d55d03f87e0ff621db27c37325c516d.4Ck0uvE4M1xYW8HB")
     response = client.chat.completions.create(
     model="glm-4", 
     messages=[
-         {"role": "user", "content": f"请根据以下清洗后的招标公告内容，提取招标相关的全部信息，并以键值对的形式返回这些信息。我需要以下字段：tender_id, tender_document_start_time, tender_document_end_time, question_deadline, answer_announcement_time, bid_submission_deadline, bid_opening_time, tenderer, tender_contact, contact_phone, tender_agency, tender_agency_contact, tender_agency_contact_phone, supervision_qualification_requirement, business_license_requirement, chief_supervisor_qualification_requirement, consortium_bidding_requirement, project_name, investment_project_code, tender_project_name, implementation_site, funding_source, tender_scope_and_scale, duration, maximum_bid_price, qualification_review_method。这些字段的内容是：{cleanedHtml}。请以以下的JSON格式返回结果：{{\"tender_id\": \"\", \"tender_document_start_time\": \"\", \"tender_document_end_time\": \"\", \"question_deadline\": \"\", \"answer_announcement_time\": \"\", \"bid_submission_deadline\": \"\", \"bid_opening_time\": \"\", \"tenderer\": \"\", \"tender_contact\": \"\", \"contact_phone\": \"\", \"tender_agency\": \"\", \"tender_agency_contact\": \"\", \"tender_agency_contact_phone\": \"\", \"supervision_qualification_requirement\": \"\", \"business_license_requirement\": \"\", \"chief_supervisor_qualification_requirement\": \"\", \"consortium_bidding_requirement\": \"\", \"project_name\": \"\", \"investment_project_code\": \"\", \"tender_project_name\": \"\", \"implementation_site\": \"\", \"funding_source\": \"\", \"tender_scope_and_scale\": \"\", \"duration\": \"\", \"maximum_bid_price\": \"\", \"qualification_review_method\": \"\"}}。请注意，返回的结果应该是一个有效的JSON字符串，不应该包含任何特殊字符或注释。某些值不存在或者没有提供则默认将这些值留空"}
+         {"role": "user", "content": f"请根据以下清洗后的招标公告内容，提取招标相关的全部信息，并以键值对的形式返回这些信息。我需要以下字段：tender_id, tender_document_start_time, tender_document_end_time, question_deadline, answer_announcement_time, bid_submission_deadline, bid_opening_time, tenderer, tender_contact, contact_phone, tender_agency, tender_agency_contact, tender_agency_contact_phone, supervision_qualification_requirement, business_license_requirement, chief_supervisor_qualification_requirement, consortium_bidding_requirement, project_name, investment_project_code, tender_project_name, implementation_site, funding_source, tender_scope_and_scale, duration, maximum_bid_price, qualification_review_method。这些字段的内容是：{cleanedHtml}。请以以下的JSON格式返回结果：{{\"tender_id\": \"\", \"tender_document_start_time\": \"\", \"tender_document_end_time\": \"\", \"question_deadline\": \"\", \"answer_announcement_time\": \"\", \"bid_submission_deadline\": \"\", \"bid_opening_time\": \"\", \"tenderer\": \"\", \"tender_contact\": \"\", \"contact_phone\": \"\", \"tender_agency\": \"\", \"tender_agency_contact\": \"\", \"tender_agency_contact_phone\": \"\", \"supervision_qualification_requirement\": \"\", \"business_license_requirement\": \"\", \"chief_supervisor_qualification_requirement\": \"\", \"consortium_bidding_requirement\": \"\", \"project_name\": \"\", \"investment_project_code\": \"\", \"tender_project_name\": \"\", \"implementation_site\": \"\", \"funding_source\": \"\", \"tender_scope_and_scale\": \"\", \"duration\": \"\", \"maximum_bid_price\": \"\", \"qualification_review_method\": \"\"}}。请注意，返回的结果应该是一个有效的JSON字符串，不应该包含任何特殊字符，不出现注释。某些值不存在或者没有提供则默认将这些值留空"}
     ],
     top_p=0.7,
     temperature=0.2,
@@ -41,11 +42,23 @@ def getFormatedData(cleanedHtml):
     # 获取message的内容
     message_content = response.choices[0].message.content
 
+   # 获取message的内容
+    message_content = response.choices[0].message.content
+    print("got message_content")
+
     # 去掉message_content中的特殊字符
     message_content_cleaned = message_content.split('```json')[1]
     # 去掉message_content中的特殊字符
     message_content_cleaned = message_content_cleaned.replace('\n', '').replace('\\', '').replace('`', '')
-
+    
+    # 使用正则表达式找到所有的注释
+    comments = re.findall(r'//[^"\n]*', message_content_cleaned)
+    # 使用正则表达式替换掉注释的 "//" 和其后的文字
+    message_content_cleaned = re.sub(r'//[^"\n]*', '', message_content_cleaned)
+    # 打印日志
+    for comment in comments:
+        print(f"Successfully removed comment: {comment}")
+    
     # 找到最外层的 }
     count = 0
     for i, char in enumerate(message_content_cleaned):
@@ -119,10 +132,10 @@ def insertTenderDetail(tender_id, formatedData):
             db.commit()
 
 # 使用gethtml(18)函数的返回值作为getFormatedData函数的输入
-cleanedHtml = gethtml(97)
+cleanedHtml = gethtml(93)
 if cleanedHtml is not None:
     formatedData = getFormatedData(cleanedHtml)
-    insertTenderDetail(97, formatedData)
+    insertTenderDetail(93, formatedData)
 
 # def post_process_data(data):
 #     # 验证字段
