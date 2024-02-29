@@ -1,6 +1,6 @@
 import mysql.connector
 from mysql.connector import Error
-from config import DB_CONFIG, TENDER_INFO_TABLE_NAME, TENDER_DETAIL_TABLE_NAME
+from config import DB_CONFIG, TENDER_INFO_TABLE_NAME, TENDER_DETAIL_HTML_TABLE_NAME
 
 def connect_db():
     try:
@@ -49,7 +49,7 @@ def insert_detail_data(cursor, data):
     - data: 要插入的数据，预期为一个元组，包含(tender_id, title, publish_time, original_link, original_detail_html)。
     """
     insert_query = f"""
-    INSERT INTO {TENDER_DETAIL_TABLE_NAME} (tender_id, title, publish_time, original_link, original_detail_html)
+    INSERT INTO {TENDER_DETAIL_HTML_TABLE_NAME} (tender_id, title, publish_time, original_link, original_detail_html)
     VALUES (%s, %s, %s, %s, %s)
     """
     cursor.execute(insert_query, data)
@@ -76,7 +76,7 @@ def get_uncleaned_html_records(cursor):
     """
     select_query = f"""
     SELECT id, original_detail_html 
-    FROM {TENDER_DETAIL_TABLE_NAME} 
+    FROM {TENDER_DETAIL_HTML_TABLE_NAME} 
     WHERE cleaned_detail_html IS NULL AND original_detail_html IS NOT NULL
     """
     cursor.execute(select_query)
@@ -92,31 +92,38 @@ def update_cleaned_html(cursor, cleaned_html, id):
     id -- 要更新的记录的id
     """
     update_query = f"""
-    UPDATE {TENDER_DETAIL_TABLE_NAME}
+    UPDATE {TENDER_DETAIL_HTML_TABLE_NAME}
     SET cleaned_detail_html = %s
     WHERE id = %s
     """
     cursor.execute(update_query, (cleaned_html, id))
 
 
-def get_cleaned_html(cursor, id):
+def get_all_cleaned_htmls_to_extract(cursor):
     """
-    从数据库中获取清洗后的HTML。
-
+    获取所有未提取或需要重新提取信息的cleaned_html条目。
+    
     参数:
     cursor -- 数据库游标
-    id -- 要获取的记录的id
 
     返回值:
-    清洗后的HTML
+    一个包含待提取条目的tender_id和cleaned_html的列表。
     """
+    # 注意替换这里的YOUR_CONDITION_WITH_SPECIFIC_TIME为具体的条件
+    # 例如，你可以设置为 "last_extracted_time IS NULL OR last_extracted_time < DATE_SUB(NOW(), INTERVAL 1 DAY)"
+    # 来获取所有没有提取过，或者最后提取时间早于当前时间24小时的记录
+    # select_query = f"""
+    # SELECT tender_id, cleaned_detail_html
+    # FROM {TENDER_DETAIL_HTML_TABLE_NAME}
+    # WHERE last_extracted_time IS NULL OR last_extracted_time < YOUR_CONDITION_WITH_SPECIFIC_TIME
+    # """
     select_query = f"""
-    SELECT cleaned_detail_html
-    FROM {TENDER_DETAIL_TABLE_NAME}
-    WHERE tender_id = %s
+    SELECT tender_id, cleaned_detail_html
+    FROM {TENDER_DETAIL_HTML_TABLE_NAME}
+    WHERE last_extracted_time IS NULL
     """
-    cursor.execute(select_query, (id,))
-    return cursor.fetchone()[0]
+    cursor.execute(select_query)
+    return cursor.fetchall()
 
 
 def insert_detail_data(data):
@@ -130,7 +137,7 @@ def insert_detail_data(data):
         try:
             cursor = connection.cursor()
             insert_query = f"""
-            INSERT INTO {TENDER_DETAIL_TABLE_NAME} (tender_id, tender_document_start_time, tender_document_end_time, question_deadline, answer_announcement_time, bid_submission_deadline, bid_opening_time, tenderer, tender_contact, contact_phone, tender_agency, tender_agency_contact, tender_agency_contact_phone, supervision_qualification_requirement, business_license_requirement, chief_supervisor_qualification_requirement, consortium_bidding_requirement, project_name, investment_project_code, tender_project_name, implementation_site, funding_source, tender_scope_and_scale, duration, maximum_bid_price, qualification_review_method)
+            INSERT INTO {TENDER_DETAIL_HTML_TABLE_NAME} (tender_id, tender_document_start_time, tender_document_end_time, question_deadline, answer_announcement_time, bid_submission_deadline, bid_opening_time, tenderer, tender_contact, contact_phone, tender_agency, tender_agency_contact, tender_agency_contact_phone, supervision_qualification_requirement, business_license_requirement, chief_supervisor_qualification_requirement, consortium_bidding_requirement, project_name, investment_project_code, tender_project_name, implementation_site, funding_source, tender_scope_and_scale, duration, maximum_bid_price, qualification_review_method)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
             cursor.execute(insert_query, data)
