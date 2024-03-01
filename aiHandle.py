@@ -1,4 +1,5 @@
-from database_util import connect_db, get_uncleaned_html_records, update_cleaned_html
+from database_util import connect_db,get_all_cleaned_htmls_to_extract
+import datetime
 
 def gethtml(tender_id):
     # 连接数据库
@@ -31,7 +32,7 @@ def getFormatedData(cleanedHtml):
     response = client.chat.completions.create(
     model="glm-4", 
     messages=[
-         {"role": "user", "content": f"请根据以下清洗后的招标公告内容，提取招标相关的全部信息，并以键值对的形式返回这些信息。我需要以下字段：tender_id, tender_document_start_time, tender_document_end_time, question_deadline, answer_announcement_time, bid_submission_deadline, bid_opening_time, tenderer, tender_contact, contact_phone, tender_agency, tender_agency_contact, tender_agency_contact_phone, supervision_qualification_requirement, business_license_requirement, chief_supervisor_qualification_requirement, consortium_bidding_requirement, project_name, investment_project_code, tender_project_name, implementation_site, funding_source, tender_scope_and_scale, duration, maximum_bid_price, qualification_review_method。这些字段的内容是：{cleanedHtml}。请以以下的JSON格式返回结果：{{\"tender_id\": \"\", \"tender_document_start_time\": \"\", \"tender_document_end_time\": \"\", \"question_deadline\": \"\", \"answer_announcement_time\": \"\", \"bid_submission_deadline\": \"\", \"bid_opening_time\": \"\", \"tenderer\": \"\", \"tender_contact\": \"\", \"contact_phone\": \"\", \"tender_agency\": \"\", \"tender_agency_contact\": \"\", \"tender_agency_contact_phone\": \"\", \"supervision_qualification_requirement\": \"\", \"business_license_requirement\": \"\", \"chief_supervisor_qualification_requirement\": \"\", \"consortium_bidding_requirement\": \"\", \"project_name\": \"\", \"investment_project_code\": \"\", \"tender_project_name\": \"\", \"implementation_site\": \"\", \"funding_source\": \"\", \"tender_scope_and_scale\": \"\", \"duration\": \"\", \"maximum_bid_price\": \"\", \"qualification_review_method\": \"\"}}。请注意，返回的结果应该是一个有效的JSON字符串，不应该包含任何特殊字符，不出现注释。某些值不存在或者没有提供则默认将这些值留空"}
+         {"role": "user", "content": f"请根据以下清洗后的招标公告内容，提取招标相关的全部信息，并以键值对的形式返回这些信息。我需要以下字段：tender_id, tender_document_start_time, tender_document_end_time, question_deadline, answer_announcement_time, bid_submission_deadline, bid_opening_time, tenderer, tender_contact, contact_phone, tender_agency, tender_agency_contact, tender_agency_contact_phone, supervision_qualification_requirement, business_license_requirement, chief_supervisor_qualification_requirement, consortium_bidding_requirement, project_name, investment_project_code, tender_project_name, implementation_site, funding_source, tender_scope_and_scale, duration, maximum_bid_price, qualification_review_method。这些字段的内容是：{cleanedHtml}。请以以下的JSON格式返回结果：```json{{\"tender_id\": \"\", \"tender_document_start_time\": \"\", \"tender_document_end_time\": \"\", \"question_deadline\": \"\", \"answer_announcement_time\": \"\", \"bid_submission_deadline\": \"\", \"bid_opening_time\": \"\", \"tenderer\": \"\", \"tender_contact\": \"\", \"contact_phone\": \"\", \"tender_agency\": \"\", \"tender_agency_contact\": \"\", \"tender_agency_contact_phone\": \"\", \"supervision_qualification_requirement\": \"\", \"business_license_requirement\": \"\", \"chief_supervisor_qualification_requirement\": \"\", \"consortium_bidding_requirement\": \"\", \"project_name\": \"\", \"investment_project_code\": \"\", \"tender_project_name\": \"\", \"implementation_site\": \"\", \"funding_source\": \"\", \"tender_scope_and_scale\": \"\", \"duration\": \"\", \"maximum_bid_price\": \"\", \"qualification_review_method\": \"\"}}```。请注意，返回的结果应该是一个有效的JSON字符串，不应该包含任何特殊字符，不出现注释。某些值不存在或者没有提供则默认将这些值留空"}
     ],
     top_p=0.7,
     temperature=0.2,
@@ -87,7 +88,8 @@ def getFormatedData(cleanedHtml):
         return None
 
     # 打印出data
-    print("FORMATED DATA DONE,DATA:" + json.dumps(formatedData))
+    print("FORMATED DATA DONE,DATA print ...:")
+    #  + json.dumps(formatedData)
     return formatedData
 
 
@@ -104,9 +106,11 @@ def insert_into_tender_detail(cursor, data):
     # 创建INSERT SQL语句
     insert_query = f"""INSERT INTO tender_detail ({fields}) VALUES ({values})"""
     
+    
     # 执行SQL语句
     cursor.execute(insert_query, list(data.values()))
-    print("insert："+insert_query)
+    print("inserting data into tender_detail")
+    # +insert_query
 
 def insertTenderDetail(tender_id, formatedData):
     # 连接数据库
@@ -131,27 +135,48 @@ def insertTenderDetail(tender_id, formatedData):
             # 提交事务
             db.commit()
 
-# 使用gethtml(18)函数的返回值作为getFormatedData函数的输入
-cleanedHtml = gethtml(93)
-if cleanedHtml is not None:
-    formatedData = getFormatedData(cleanedHtml)
-    insertTenderDetail(93, formatedData)
+def update_last_extracted_time(db,cursor, tender_id):
+    # 更新最后提取时间
+    now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    update_sql = "UPDATE tender_detail_html SET last_extracted_time = %s WHERE tender_id = %s"
+    cursor.execute(update_sql, (now, tender_id))
+    db.commit()
 
-# def post_process_data(data):
-#     # 验证字段
-#     required_fields = ['tender_id', 'tender_document_start_time', 'tender_document_end_time', 'question_deadline', 'answer_announcement_time', 'bid_submission_deadline', 'bid_opening_time', 'tenderer', 'tender_contact', 'contact_phone', 'tender_agency', 'tender_agency_contact', 'tender_agency_contact_phone', 'supervision_qualification_requirement', 'business_license_requirement', 'chief_supervisor_qualification_requirement', 'consortium_bidding_requirement', 'project_name', 'investment_project_code', 'tender_project_name', 'implementation_site', 'funding_source', 'tender_scope_and_scale', 'duration', 'maximum_bid_price', 'qualification_review_method']
-#     for field in required_fields:
-#         if field not in data:
-#             data[field] = None  # 或者你可以设置一个默认值
+def main():
+    # 连接数据库
+    db = connect_db()
+    # 创建游标
+    cursor = db.cursor()
+    print("connect db success")
+    # 获取所有未提取或需要重新提取信息的HTML
+    entries = get_all_cleaned_htmls_to_extract(cursor)
 
-#     # 类型转换
-#     if data['tender_id'] is not None:
-#         data['tender_id'] = int(data['tender_id'])
-#     if data['maximum_bid_price'] is not None:
-#         data['maximum_bid_price'] = float(data['maximum_bid_price'])
+    for entry in entries:
+        tender_id, cleaned_html = entry  # 使用解构来获取tender_id和cleaned_detail_html
+        print(f"Processing tender_id: {tender_id}")
+        # 如果cleanedHtml不为空，则处理数据并插入到数据库中
+        if cleaned_html is not None:
+            try:
+                formatedData = getFormatedData(cleaned_html)
+                print("getFormatedData")
+                insertTenderDetail(tender_id, formatedData)
+                print("insertTenderDetail")
+            except Exception as e:
+                print(f"Error processing tender_id: {tender_id}, error: {str(e)}")
+                continue
+            # formatedData = getFormatedData(cleaned_html)
+            # print("getFormatedData")
+            # insertTenderDetail(tender_id, formatedData)
+            # print("insertTenderDetail")
 
-#     # 数据清洗
-#     if data['tenderer'] is not None:
-#         data['tenderer'] = data['tenderer'].replace('\n', '').replace('\r', '')
+        # 更新最后提取时间
+        update_last_extracted_time(db, cursor, tender_id)
+        print("update_last_extracted_time")
 
-#     return data
+    # 关闭游标和数据库连接
+    cursor.close()
+    db.close()
+    print("db closed")
+
+if __name__ == "__main__":
+    main()
