@@ -22,7 +22,7 @@ def init_driver():
 def setup_search_conditions(driver, url):
     driver.get(url)
     wait = WebDriverWait(driver, 10)
-    wait.until(EC.element_to_be_clickable((By.ID, "choose_time_03"))).click()
+    wait.until(EC.element_to_be_clickable((By.ID, "choose_time_04"))).click() # 04: 本月; 03：近十天; 02:近三天
     wait.until(EC.element_to_be_clickable((By.ID, "choose_source_1"))).click()
     Select(driver.find_element(By.ID, "provinceId")).select_by_value("440000")
     wait.until(EC.element_to_be_clickable((By.ID, "choose_classify_01"))).click()

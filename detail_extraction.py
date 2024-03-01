@@ -3,6 +3,10 @@ from database_util import connect_db,get_all_cleaned_htmls_to_extract
 import datetime
 import json
 from mysql.connector import Error
+import logging
+# 配置日志级别，输出位置等
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 
 def extract_detail_from_html(html):
@@ -25,13 +29,10 @@ def extract_detail_from_html(html):
     注意：这个函数依赖于ZhipuAI的API，需要提供有效的API密钥。
     """
 
-
-
     client = ZhipuAI(api_key="8d55d03f87e0ff621db27c37325c516d.4Ck0uvE4M1xYW8HB")
     
     template = """
             项目基本信息：
-            - 项目ID (整型): 唯一标识符
             - 项目名称 (字符串): 详细的项目名称
             - 投资项目代码 (字符串): 项目的唯一代码
             - 招标项目名称 (字符串): 招标的详细名称
@@ -60,28 +61,40 @@ def extract_detail_from_html(html):
             - 答疑公告时间 (字符串): 答疑公告的发布时间以年月日时分表示
             - 递交投标文件截止时间 (字符串): 提交投标文件的截止时间以年月日时分表示
             - 开标时间 (字符串): 开标仪式的具体时间以年月日时分表示
+
+            其他信息：
+            - (待补充新字段...)
             """
 
 
     # 清空对话
     messages = []
 
-    messages.append({"role": "system", "content": "你的任务是提取以下HTML招标公告中的信息，并按照提供的模版格式化输出为一个Python字典。如果HTML中缺少某些信息，请在相应字段中标记为“信息缺失”。如果HTML中包含模版中未列出的新信息，请添加新字段和值。招标公告 HTML:"})
-    
-    messages.append({"role": "user", "content": html})
-
-    messages.append({"role": "system", "content": "请按照以下模版格式化提取信息，并将信息添加到数据表中："})
+    messages.append({"role": "system", "content": """
+                     你的任务是提取以下HTML招标公告中的全部信息。
+                     1. 根据模版填充相应的字段和值；
+                     2. 若无法找到字段信息，则忽略该字段；
+                     3. 若判断有全新的字段（未包含在模版中），则添加新字段和值。
+                     """})
+    messages.append({"role": "system", "content": """
+                     注意：招标公告的所有内容都非常重要，务必涵盖所有信息，遇到不清晰的信息时，进行合理推断。
+                     下面是目前的模版："""
+                     })
 
     messages.append({"role": "system", "content": template})
+    
+    messages.append({"role": "user", "content": "下面是招标公告内容："})
+
+    messages.append({"role": "user", "content": html})
+
 
 
     
     response = client.chat.completions.create(
-        model="glm-4",  # 填写需要调用的模型名称
+        model="glm-4", 
         messages=messages,
-        # tools=tools,
         top_p=0.7,
-        temperature=0.5,
+        temperature=0.95,
         max_tokens=4096,
     )
     return response
@@ -117,21 +130,6 @@ def detail_list_to_dict(html):
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "tender_document_start_time": {"description": "获取招标文件开始时间", "type": "string"},
-                    "tender_document_end_time": {"description": "获取招标文件截止时间", "type": "string"},
-                    "question_deadline": {"description": "提疑截止时间", "type": "string"},
-                    "answer_announcement_time": {"description": "答疑公告时间", "type": "string"},
-                    "bid_submission_deadline": {"description": "递交投标文件截止时间", "type": "string"},
-                    "bid_opening_time": {"description": "开标时间", "type": "string"},
-                    "tenderer": {"description": "招标人", "type": "string"},
-                    "tender_contact": {"description": "招标人联系人", "type": "string"},
-                    "contact_phone": {"description": "联系电话", "type": "string"},
-                    "tender_agency": {"description": "招标代理机构", "type": "string"},
-                    "tender_agency_contact": {"description": "招标代理联系人", "type": "string"},
-                    "tender_agency_contact_phone": {"description": "招标代理联系电话", "type": "string"},
-                    "supervision_qualification_requirement": {"description": "监理资质要求", "type": "string"},
-                    "chief_supervisor_qualification_requirement": {"description": "总监理工程师资格要求", "type": "string"},
-                    "consortium_bidding_requirement": {"description": "联合体投标要求", "type": "string"},
                     "project_name": {"description": "项目名称", "type": "string"},
                     "investment_project_code": {"description": "投资项目代码", "type": "string"},
                     "tender_project_name": {"description": "招标项目名称", "type": "string"},
@@ -140,26 +138,50 @@ def detail_list_to_dict(html):
                     "tender_scope_and_scale": {"description": "招标范围及规模", "type": "string"},
                     "duration": {"description": "工期", "type": "string"},
                     "maximum_bid_price": {"description": "最高投标限价", "type": "number"},
-                    "qualification_review_method": {"description": "资格审查方式", "type":  "string"}
+                    "business_license_requirement":{"description": "营业执照要求", "type": "string"},
+                    "supervision_qualification_requirement": {"description": "监理资质要求", "type": "string"},
+                    "chief_supervisor_qualification_requirement": {"description": "总监理工程师资格要求", "type": "string"},
+                    "consortium_bidding_requirement": {"description": "联合体投标要求", "type": "string"},
+                    "qualification_review_method": {"description": "资格审查方式", "type":  "string"},
+                    "tenderer": {"description": "招标人", "type": "string"},
+                    "tender_contact": {"description": "招标人联系人", "type": "string"},
+                    "contact_phone": {"description": "联系电话", "type": "string"},
+                    "tender_agency": {"description": "招标代理机构", "type": "string"},
+                    "tender_agency_contact": {"description": "招标代理联系人", "type": "string"},
+                    "tender_agency_contact_phone": {"description": "招标代理联系电话", "type": "string"},
+                    "tender_document_start_time": {"description": "获取招标文件开始时间", "type": "string"},
+                    "tender_document_end_time": {"description": "获取招标文件截止时间", "type": "string"},
+                    "question_deadline": {"description": "提疑截止时间", "type": "string"},
+                    "answer_announcement_time": {"description": "答疑公告时间", "type": "string"},
+                    "bid_submission_deadline": {"description": "递交投标文件截止时间", "type": "string"},
+                    "bid_opening_time": {"description": "开标时间", "type": "string"}
                     },
                 "required": [
-                    "tenderer",
-                    "tender_contact",
-                    "contact_phone",
-                    "tender_agency",
-                    "tender_agency_contact",
-                    "tender_agency_contact_phone",
-                    "supervision_qualification_requirement",
-                    "chief_supervisor_qualification_requirement",
-                    "consortium_bidding_requirement",
-                    "project_name",
-                    "investment_project_code",
-                    "tender_project_name",
-                    "funding_source",
-                    "tender_scope_and_scale",
-                    "duration",
-                    "maximum_bid_price",
-                    "qualification_review_method"
+                    'project_name',
+                    'investment_project_code',
+                    'tender_project_name',
+                    'implementation_site',
+                    'funding_source',
+                    'tender_scope_and_scale',
+                    'duration',
+                    'maximum_bid_price',
+                    'business_license_requirement',
+                    'supervision_qualification_requirement',
+                    'chief_supervisor_qualification_requirement',
+                    'consortium_bidding_requirement',
+                    'qualification_review_method',
+                    'tenderer',
+                    'tender_contact',
+                    'contact_phone',
+                    'tender_agency',
+                    'tender_agency_contact',
+                    'tender_agency_contact_phone',
+                    'tender_document_start_time',
+                    'tender_document_end_time',
+                    'question_deadline',
+                    'answer_announcement_time',
+                    'bid_submission_deadline',
+                    'bid_opening_time'
                     ]
                 }
             }
@@ -169,15 +191,17 @@ def detail_list_to_dict(html):
     # 清空对话
     messages = []
 
-    messages.append({"role": "system", "content": """将下面的招标公告（html）中的,"招标人","项目名称","工期","最高投标限价"等,所有要求的信息插入数据库。"""})
+    messages.append({"role": "system", "content": """
+                     你的任务是将下面的招标公告的内容，用tools逐项填入数据库表格中。
+                     注意：每一条数据内容都非常重要，请你务必仔细阅读，并完整填写。
+                     """})
     messages.append({"role": "user", "content":"""
                     下面是"招标公告"内容:
                     """})
-
     messages.append({"role": "user", "content": html})
 
     response = client.chat.completions.create(
-        model="glm-4",  # 填写需要调用的模型名称
+        model="glm-4", 
         messages=messages,
         tools=tools,
         top_p=0.7,
@@ -187,6 +211,12 @@ def detail_list_to_dict(html):
 
     return response
 
+
+def get_value_or_none(data, key):
+    value = data.get(key)
+    if isinstance(value, dict):
+        return None  # 如果是字典，返回None
+    return value
 
 def insert_detail_data(tender_id, data):
     """
@@ -209,35 +239,34 @@ def insert_detail_data(tender_id, data):
             insert_query = f"""
             INSERT INTO tender_detail (tender_id, tender_document_start_time, tender_document_end_time, question_deadline, answer_announcement_time, bid_submission_deadline, bid_opening_time, tenderer, tender_contact, contact_phone, tender_agency, tender_agency_contact, tender_agency_contact_phone, supervision_qualification_requirement, business_license_requirement, chief_supervisor_qualification_requirement, consortium_bidding_requirement, project_name, investment_project_code, tender_project_name, implementation_site, funding_source, tender_scope_and_scale, duration, maximum_bid_price, qualification_review_method) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
-
-            # 构建参数列表，确保参数的顺序与SQL语句中的占位符顺序相匹配
+            # 构建参数列表，对所有参数应用上述逻辑
             params = [
-                tender_id,  # 从外部获取tender_id
-                data.get('tender_document_start_time', None),
-                data.get('tender_document_end_time', None),
-                data.get('question_deadline', None),
-                data.get('answer_announcement_time', None),
-                data.get('bid_submission_deadline', None),
-                data.get('bid_opening_time', None),
-                data.get('tenderer', None),
-                data.get('tender_contact', None),
-                data.get('contact_phone', None),
-                data.get('tender_agency', None),
-                data.get('tender_agency_contact', None),
-                data.get('tender_agency_contact_phone', None),
-                data.get('supervision_qualification_requirement', None),
-                data.get('business_license_requirement', None),
-                data.get('chief_supervisor_qualification_requirement', None),
-                data.get('consortium_bidding_requirement', None),
-                data.get('project_name', None),
-                data.get('investment_project_code', None),
-                data.get('tender_project_name', None),
-                data.get('implementation_site', None),
-                data.get('funding_source', None),
-                data.get('tender_scope_and_scale', None),
-                data.get('duration', None),
-                data.get('maximum_bid_price', None),
-                data.get('qualification_review_method', None)
+                tender_id,  # 假设这是从外部正确获取的
+                get_value_or_none(data, 'tender_document_start_time'),
+                get_value_or_none(data, 'tender_document_end_time'),
+                get_value_or_none(data, 'question_deadline'),
+                get_value_or_none(data, 'answer_announcement_time'),
+                get_value_or_none(data, 'bid_submission_deadline'),
+                get_value_or_none(data, 'bid_opening_time'),
+                get_value_or_none(data, 'tenderer'),
+                get_value_or_none(data, 'tender_contact'),
+                get_value_or_none(data, 'contact_phone'),
+                get_value_or_none(data, 'tender_agency'),
+                get_value_or_none(data, 'tender_agency_contact'),
+                get_value_or_none(data, 'tender_agency_contact_phone'),
+                get_value_or_none(data, 'supervision_qualification_requirement'),
+                get_value_or_none(data, 'business_license_requirement'),
+                get_value_or_none(data, 'chief_supervisor_qualification_requirement'),
+                get_value_or_none(data, 'consortium_bidding_requirement'),
+                get_value_or_none(data, 'project_name'),
+                get_value_or_none(data, 'investment_project_code'),
+                get_value_or_none(data, 'tender_project_name'),
+                get_value_or_none(data, 'implementation_site'),
+                get_value_or_none(data, 'funding_source'),
+                get_value_or_none(data, 'tender_scope_and_scale'),
+                get_value_or_none(data, 'duration'),
+                get_value_or_none(data, 'maximum_bid_price'),
+                get_value_or_none(data, 'qualification_review_method')
             ]
             cursor.execute(insert_query, params)
             connection.commit()
@@ -252,12 +281,15 @@ def insert_detail_data(tender_id, data):
                 
 
 def detail_extract(tender_id, html):
+    logging.info(f"开始处理 tender_id 为 {tender_id} 的记录")
     # this is the bulletpoint list of the extracted details (key-value pairs)
     detail_list = extract_detail_from_html(html).choices[0].message.content
     # tansform the bulletpoint list into a dictionary, ready for insertion into the database
     detail_json = detail_list_to_dict(detail_list).choices[0].message.tool_calls[0].function.arguments
     data = json.loads(detail_json.replace("'", "\""))
     insert_detail_data(tender_id, data)
+    logging.info(f"完成处理 tender_id 为 {tender_id} 的记录")
+
     
 
 def update_last_extracted_time(db,cursor, tender_id):
@@ -266,6 +298,8 @@ def update_last_extracted_time(db,cursor, tender_id):
     update_sql = "UPDATE tender_detail_html SET last_extracted_time = %s WHERE tender_id = %s"
     cursor.execute(update_sql, (now, tender_id))
     db.commit()
+    logging.info(f"更新 tender_id 为 {tender_id} 的最后提取时间")
+
 
 
 def main():
@@ -276,8 +310,11 @@ def main():
 
     # 获取所有未提取或需要重新提取信息的HTML
     entries = get_all_cleaned_htmls_to_extract(cursor)
+    logging.info(f"从数据库中获取了 {len(entries)} 条记录")
 
     for entry in entries:
+        logging.info(f"正在处理第 {entry[0]} 条记录")
+
         tender_id = entry[0]  # 使用索引0来获取tender_id
         cleaned_html = entry[1]  # 使用索引1来获取cleaned_detail_html
         
@@ -290,6 +327,7 @@ def main():
     # 关闭游标和数据库连接
     cursor.close()
     db.close()
+    logging.info("所有记录处理完毕")
     pass
 
 if __name__ == "__main__":

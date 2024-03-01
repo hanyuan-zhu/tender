@@ -1,8 +1,13 @@
 from bs4 import BeautifulSoup
 from database_util import connect_db, get_uncleaned_html_records, update_cleaned_html
+import logging
 
+# 配置日志级别，输出位置等
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def clean_detail_html(html_content):
+    logging.info("开始清洗HTML")
+
     # 使用BeautifulSoup解析HTML
     soup = BeautifulSoup(html_content, 'html.parser')
 
@@ -31,15 +36,19 @@ def clean_detail_html(html_content):
     # 移除<strong>标签但保留其内容
     for strong_tag in soup.find_all('strong'):
         strong_tag.unwrap()
+    
+    logging.info("完成清洗HTML")
 
     return str(soup)
 
 
 def clean_and_update_html():
+    logging.info("开始清洗和更新HTML")
     # 连接数据库
     db = connect_db()
     if db is None:
         print("Failed to connect to the database.")
+        logging.error("无法连接到数据库")
         return
 
     # 创建游标
@@ -47,9 +56,13 @@ def clean_and_update_html():
 
     # 获取所有未清洗的HTML记录
     records = get_uncleaned_html_records(cursor)
+    logging.info(f"获取了 {len(records)} 条未清洗的HTML记录")
+
 
     for record in records:
         id, original_html = record
+        logging.info(f"正在处理第 {id} 条记录")
+
         # 清洗HTML
         cleaned_html = clean_detail_html(original_html)
         # 更新数据库

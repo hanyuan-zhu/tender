@@ -41,7 +41,7 @@ def get_unfetched_tender_info(cursor):
     cursor.execute(select_query)
     return cursor.fetchall()
 
-def insert_detail_data(cursor, data):
+def insert_detail_html(cursor, data):
     """
     将爬取到的详细信息插入到数据库中。
     参数:

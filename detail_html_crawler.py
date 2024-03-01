@@ -1,4 +1,4 @@
-from database_util import connect_db, insert_detail_data,update_fetched_status,get_unfetched_tender_info
+from database_util import connect_db, insert_detail_html,update_fetched_status,get_unfetched_tender_info
 from webdriver_util import init_driver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -72,8 +72,8 @@ def fetch_and_save_detail_info():
 
 
             print("Inserting data into database...")
-            # 假设 insert_detail_data 是一个已定义的函数，用于将数据插入数据库
-            insert_detail_data(cursor, (tender_id, title, publish_time, original_link, original_detail_html))
+            # 假设 insert_detail_html 是一个已定义的函数，用于将数据插入数据库
+            insert_detail_html(cursor, (tender_id, title, publish_time, original_link, original_detail_html))
             connection.commit()
 
             print("Updating fetched status...")
