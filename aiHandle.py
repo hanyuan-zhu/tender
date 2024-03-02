@@ -28,7 +28,7 @@ import json
 import re
 
 def getFormatedData(cleanedHtml):
-    client = ZhipuAI(api_key="8d55d03f87e0ff621db27c37325c516d.4Ck0uvE4M1xYW8HB")
+    client = ZhipuAI(api_key="e6af334544b37a85e83900a9152eb9a0.GzjnBTUhPOhDDJhx")
     response = client.chat.completions.create(
     model="glm-4", 
     messages=[
@@ -159,19 +159,18 @@ def main():
             try:
                 formatedData = getFormatedData(cleaned_html)
                 print("getFormatedData")
-                insertTenderDetail(tender_id, formatedData)
-                print("insertTenderDetail")
+                if formatedData is not None:  # 检查formatedData是否为None
+                    insertTenderDetail(tender_id, formatedData)
+                    print("insertTenderDetail")
+                    # 更新最后提取时间
+                    update_last_extracted_time(db, cursor, tender_id)
+                    print("update_last_extracted_time")
+                else:
+                    print(f"Error processing tender_id: {tender_id}, formatedData is None.")
+                    continue
             except Exception as e:
                 print(f"Error processing tender_id: {tender_id}, error: {str(e)}")
                 continue
-            # formatedData = getFormatedData(cleaned_html)
-            # print("getFormatedData")
-            # insertTenderDetail(tender_id, formatedData)
-            # print("insertTenderDetail")
-
-        # 更新最后提取时间
-        update_last_extracted_time(db, cursor, tender_id)
-        print("update_last_extracted_time")
 
     # 关闭游标和数据库连接
     cursor.close()
