@@ -7,7 +7,14 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 from config import CHROMEDRIVER_PATH, HEADLESS
 
-def init_driver():
+
+
+############################################################################################################
+# 以下函数用于main.py：
+# - initDriver (也用于 crawlDetail.py)
+# - setupSearchConditions
+############################################################################################################
+def initDriver():
     service = Service(CHROMEDRIVER_PATH)
     options = Options()
     if HEADLESS:
@@ -19,7 +26,7 @@ def init_driver():
     driver = webdriver.Chrome(service=service, options=options)
     return driver
 
-def setup_search_conditions(driver, url):
+def setupSearchConditions(driver, url):
     driver.get(url)
     wait = WebDriverWait(driver, 10)
     wait.until(EC.element_to_be_clickable((By.ID, "choose_time_04"))).click() # 04: 本月; 03：近十天; 02:近三天

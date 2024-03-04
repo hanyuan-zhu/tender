@@ -1,11 +1,11 @@
 from database_util import connect_db, check_existence, insert_data
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+# from selenium.webdriver.support import expected_conditions as EC
 from datetime import datetime
 from selenium.common.exceptions import TimeoutException
 
-def crawl_index(driver):
+def crawlIndex(driver):
     # 等待搜索结果更新
     old_record_count = driver.find_element(By.CSS_SELECTOR, "#search_topleft b").text
     driver.find_element(By.ID, "searchButton").click()
@@ -77,4 +77,4 @@ def crawl_index(driver):
 
 
 if __name__ == "__main__":
-    crawl_index()
+    crawlIndex()

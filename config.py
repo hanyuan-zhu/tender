@@ -14,7 +14,6 @@ DB_CONFIG = {
     'charset': 'utf8mb4'
 }
 
-
 ## 用于本地测试的配置
 # DB_CONFIG = {
 #     'host': 'localhost',  # 数据库服务器地址

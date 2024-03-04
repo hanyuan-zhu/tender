@@ -5,7 +5,7 @@ import logging
 # 配置日志级别，输出位置等
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def clean_detail_html(html_content):
+def cleanDetailHtml(html_content):
     logging.info("开始清洗HTML")
 
     # 使用BeautifulSoup解析HTML
@@ -42,7 +42,7 @@ def clean_detail_html(html_content):
     return str(soup)
 
 
-def clean_and_update_html():
+def cleanAndUpdateHtml():
     logging.info("开始清洗和更新HTML")
     # 连接数据库
     db = connect_db()
@@ -64,7 +64,7 @@ def clean_and_update_html():
         logging.info(f"正在处理第 {id} 条记录")
 
         # 清洗HTML
-        cleaned_html = clean_detail_html(original_html)
+        cleaned_html = cleanDetailHtml(original_html)
         # 更新数据库
         update_cleaned_html(cursor, cleaned_html, id)
 
@@ -76,4 +76,4 @@ def clean_and_update_html():
 
 
 if __name__ == "__main__":
-    clean_and_update_html()
+    cleanAndUpdateHtml()

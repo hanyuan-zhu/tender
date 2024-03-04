@@ -1,5 +1,5 @@
-from database_util import connect_db, insert_detail_html,update_fetched_status,get_unfetched_tender_info
-from webdriver_util import init_driver
+from database_util import connect_db,get_unfetched_tender_info,insert_detail_html,update_fetched_status
+from webdriverUtil import initDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -9,7 +9,7 @@ import re
 
 
 
-def fetch_and_save_detail_info():
+def fetchAndSaveDetailInfo():
     print("Connecting to database...")
     connection = connect_db()
     cursor = connection.cursor()
@@ -22,7 +22,7 @@ def fetch_and_save_detail_info():
         print(f"Processing tender {tender_id}...")
         
         print("Initializing web driver...")
-        driver = init_driver()
+        driver = initDriver()
         driver.get(detail_link)
 
         max_attempts = 3  # 最大尝试次数
@@ -90,4 +90,4 @@ def fetch_and_save_detail_info():
     connection.close()
 
 if __name__ == "__main__":
-    fetch_and_save_detail_info()
+    fetchAndSaveDetailInfo()

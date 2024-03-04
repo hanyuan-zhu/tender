@@ -1,21 +1,23 @@
 from config import WEBPAGE_URL
-from webdriver_util import init_driver, setup_search_conditions
-from crawl_index import crawl_index
-from crawl_detail import fetch_and_save_detail_info
-from clean_html import clean_and_update_html
+from webdriverUtil import initDriver, setupSearchConditions
+from crawlIndex import crawlIndex
+from crawlDetail import fetchAndSaveDetailInfo
+from cleanHtml import cleanAndUpdateHtml
+from aiExtract import aiExtract
 
 
 def main():
-    driver = init_driver()
+    driver = initDriver()
     try:
-        setup_search_conditions(driver, WEBPAGE_URL)
-        crawl_index(driver)
+        setupSearchConditions(driver, WEBPAGE_URL)
+        crawlIndex(driver)
     finally:
         driver.quit()
         print("WebDriver session has ended.")
         
-    fetch_and_save_detail_info()
-    clean_and_update_html()
+    fetchAndSaveDetailInfo()
+    cleanAndUpdateHtml()
+    aiExtract()
 
 if __name__ == "__main__":
     main()
