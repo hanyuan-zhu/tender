@@ -5,7 +5,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from datetime import datetime
 from selenium.common.exceptions import TimeoutException
 
-def crawl_data(driver):
+def crawl_index(driver):
     # 等待搜索结果更新
     old_record_count = driver.find_element(By.CSS_SELECTOR, "#search_topleft b").text
     driver.find_element(By.ID, "searchButton").click()
@@ -77,4 +77,4 @@ def crawl_data(driver):
 
 
 if __name__ == "__main__":
-    crawl_data()
+    crawl_index()
