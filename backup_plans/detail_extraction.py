@@ -29,7 +29,7 @@ def extract_detail_from_html(html):
     注意：这个函数依赖于ZhipuAI的API，需要提供有效的API密钥。
     """
 
-    client = ZhipuAI(api_key="8d55d03f87e0ff621db27c37325c516d.4Ck0uvE4M1xYW8HB")
+    client = ZhipuAI(api_key="e6af334544b37a85e83900a9152eb9a0.GzjnBTUhPOhDDJhx")
     
     template = """
             项目基本信息：
@@ -121,7 +121,7 @@ def detail_list_to_dict(html):
     """
 
 
-    client = ZhipuAI(api_key="8d55d03f87e0ff621db27c37325c516d.4Ck0uvE4M1xYW8HB")
+    client = ZhipuAI(api_key="e6af334544b37a85e83900a9152eb9a0.GzjnBTUhPOhDDJhx")
     tools = [{
         "type": "function",
         "function": {
@@ -232,13 +232,15 @@ def insert_detail_data(tender_id, data):
             cursor = connection.cursor()
             data['tender_id'] = tender_id
 
+            # #这个是保存到 tender_detail 正式表格的
             # insert_query = f"""
-            # INSERT INTO {TENDER_DETAIL_TABLE_NAME} (tender_id, project_name, tender_project_name, tender_document_start_time, tender_document_end_time, question_deadline, answer_announcement_time, bid_submission_deadline, bid_opening_time, tenderer, tender_contact, contact_phone, tender_agency, tender_agency_contact, tender_agency_contact_phone, supervision_qualification_requirement, chief_supervisor_qualification_requirement, consortium_bidding_requirement, investment_project_code, funding_source, tender_scope_and_scale, duration, maximum_bid_price, qualification_review_method)
-            # VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            # INSERT INTO tender_detail (tender_id, tender_document_start_time, tender_document_end_time, question_deadline, answer_announcement_time, bid_submission_deadline, bid_opening_time, tenderer, tender_contact, contact_phone, tender_agency, tender_agency_contact, tender_agency_contact_phone, supervision_qualification_requirement, business_license_requirement, chief_supervisor_qualification_requirement, consortium_bidding_requirement, project_name, investment_project_code, tender_project_name, implementation_site, funding_source, tender_scope_and_scale, duration, maximum_bid_price, qualification_review_method) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             # """
+            # 这个是保存到copy的            
             insert_query = f"""
-            INSERT INTO tender_detail (tender_id, tender_document_start_time, tender_document_end_time, question_deadline, answer_announcement_time, bid_submission_deadline, bid_opening_time, tenderer, tender_contact, contact_phone, tender_agency, tender_agency_contact, tender_agency_contact_phone, supervision_qualification_requirement, business_license_requirement, chief_supervisor_qualification_requirement, consortium_bidding_requirement, project_name, investment_project_code, tender_project_name, implementation_site, funding_source, tender_scope_and_scale, duration, maximum_bid_price, qualification_review_method) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO tender_detail_copy (tender_id, tender_document_start_time, tender_document_end_time, question_deadline, answer_announcement_time, bid_submission_deadline, bid_opening_time, tenderer, tender_contact, contact_phone, tender_agency, tender_agency_contact, tender_agency_contact_phone, supervision_qualification_requirement, business_license_requirement, chief_supervisor_qualification_requirement, consortium_bidding_requirement, project_name, investment_project_code, tender_project_name, implementation_site, funding_source, tender_scope_and_scale, duration, maximum_bid_price, qualification_review_method) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
+
             # 构建参数列表，对所有参数应用上述逻辑
             params = [
                 tender_id,  # 假设这是从外部正确获取的
@@ -295,7 +297,11 @@ def detail_extract(tender_id, html):
 def update_last_extracted_time(db,cursor, tender_id):
     # 更新最后提取时间
     now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    update_sql = "UPDATE tender_detail_html SET last_extracted_time = %s WHERE tender_id = %s"
+    
+    # 临时 版本，保存到copy
+    update_sql = "UPDATE tender_detail_html_copy SET last_extracted_time = %s WHERE tender_id = %s"
+    # 正式的版本，保存到正式表格
+    # update_sql = "UPDATE tender_detail_html SET last_extracted_time = %s WHERE tender_id = %s"
     cursor.execute(update_sql, (now, tender_id))
     db.commit()
     logging.info(f"更新 tender_id 为 {tender_id} 的最后提取时间")
@@ -318,11 +324,15 @@ def main():
         tender_id = entry[0]  # 使用索引0来获取tender_id
         cleaned_html = entry[1]  # 使用索引1来获取cleaned_detail_html
         
-        # 提取详情并插入到tender_detail表中
-        detail_extract(tender_id, cleaned_html)
-        
-        # 更新最后提取时间
-        update_last_extracted_time(db,cursor, tender_id)
+        try:
+            # 提取详情并插入到tender_detail表中
+            detail_extract(tender_id, cleaned_html)
+            # 更新最后提取时间
+            update_last_extracted_time(db,cursor, tender_id)
+        except Exception as e:
+            logging.error(f"处理 tender_id 为 {tender_id} 的记录时出错: {e}")
+            continue  # 发生错误时跳过当前记录，继续处理下一条
+
 
     # 关闭游标和数据库连接
     cursor.close()

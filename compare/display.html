@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>数据比较</title>
+</head>
+<body>
+    <h2>输入Tender ID进行比较</h2>
+    <input type="text" id="tenderId" placeholder="Tender ID">
+    <button onclick="fetchData()">比较数据</button>
+    <div id="result"></div>
+
+    <script>
+        function fetchData() {
+            var tenderId = document.getElementById('tenderId').value;
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', 'compare.php?tender_id=' + tenderId, true);
+            xhr.onload = function() {
+                if (this.status == 200) {
+                    document.getElementById('result').innerHTML = this.responseText;
+                }
+            }
+            xhr.send();
+        }
+    </script>
+</body>
+</html>

@@ -11,8 +11,6 @@ def connect_db():
         print(f"Error while connecting to MySQL: {e}")
         return None
 
-import config
-
 def check_existence(cursor, link):
     cursor.execute(f"SELECT COUNT(*) FROM {TENDER_INFO_TABLE_NAME} WHERE detail_link = %s", (link,))
     return cursor.fetchone()[0] > 0
@@ -21,7 +19,6 @@ def insert_data(cursor, data):
     insert_query = f"""INSERT INTO {TENDER_INFO_TABLE_NAME} (title, publish_time, province, source_platform, business_type, info_type, industry, detail_link)
                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
     cursor.execute(insert_query, data)
-
 
 def get_unfetched_tender_info(cursor):
     """
@@ -54,7 +51,6 @@ def insert_detail_html(cursor, data):
     """
     cursor.execute(insert_query, data)
 
-
 def update_fetched_status(cursor, tender_id):
     update_query = f"""
     UPDATE {TENDER_INFO_TABLE_NAME}
@@ -62,7 +58,6 @@ def update_fetched_status(cursor, tender_id):
     WHERE id = %s
     """
     cursor.execute(update_query, (tender_id,))
-
 
 def get_uncleaned_html_records(cursor):
     """
@@ -98,7 +93,6 @@ def update_cleaned_html(cursor, cleaned_html, id):
     """
     cursor.execute(update_query, (cleaned_html, id))
 
-
 def get_all_cleaned_htmls_to_extract(cursor):
     """
     获取所有未提取或需要重新提取信息的cleaned_html条目。
@@ -124,7 +118,6 @@ def get_all_cleaned_htmls_to_extract(cursor):
     """
     cursor.execute(select_query)
     return cursor.fetchall()
-
 
 def insert_detail_data(data):
     """
