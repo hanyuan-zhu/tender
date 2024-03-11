@@ -30,7 +30,9 @@ TENDER_INFO_TABLE_NAME = 'tender_index'
 
 # 招标详情信息(原始HTML）表，包含“招标ID、招标标题、发布时间、原文链接、原始HTML内容、已清洗HTML内容”
 TENDER_DETAIL_HTML_TABLE_NAME = 'tender_detail_html'
-# TENDER_DETAIL_HTML_TABLE_NAME = 'tender_detail_html_copy' ## backup_plan 用的测试表
+# TENDER_DETAIL_HTML_TABLE_NAME = 'tender_detail_html_temp' ## backup_plan 用的测试表
 
 # 招标信息表
 TENDER_DETAIL_TABLE_NAME = 'tender_detail'
+# TENDER_DETAIL_TABLE_NAME = 'tender_detail_temp' ## backup_plan 用的测试表
+

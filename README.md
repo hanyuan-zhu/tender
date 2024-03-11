@@ -21,7 +21,7 @@
 1. 克隆仓库到本地机器：
 
 ```bash
-git clone https://yourproject.git
+git clone https://github.com/hanyuan-zhu/tender.git
 ```
 
 2. 安装必需的Python包：

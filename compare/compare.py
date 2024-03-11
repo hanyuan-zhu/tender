@@ -120,11 +120,11 @@ def score():
     try:
         with connection.cursor() as cursor:
             # 检查是否已存在评分
-            sql_check = "SELECT * FROM tender_scores WHERE tender_id = %s AND selected_table = %s"
+            sql_check = "SELECT * FROM tender_scores_temp WHERE tender_id = %s AND selected_table = %s"
             cursor.execute(sql_check, (tender_id, selected_table))
             if cursor.fetchone() is None:
                 # 插入新评分
-                sql_insert = "INSERT INTO tender_scores (tender_id, selected_table, score) VALUES (%s, %s, %s)"
+                sql_insert = "INSERT INTO tender_scores_temp (tender_id, selected_table, score) VALUES (%s, %s, %s)"
                 cursor.execute(sql_insert, (tender_id, selected_table, 1))
             # 无需更新逻辑，因为分数不叠加
         connection.commit()

@@ -1,23 +1,48 @@
+import logging
 from config import WEBPAGE_URL
 from webdriverUtil import initDriver, setupSearchConditions
 from crawlIndex import crawlIndex
 from crawlDetail import fetchAndSaveDetailInfo
 from cleanHtml import cleanAndUpdateHtml
 from aiExtract import aiExtract
+from aiExtractBackup import aiExtractBackup
 
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def main():
-    driver = initDriver()
+    driver = None
     try:
+        driver = initDriver()
         setupSearchConditions(driver, WEBPAGE_URL)
         crawlIndex(driver)
+    except Exception as e:
+        logging.error(f"An error occurred during web crawling: {e}")
     finally:
-        driver.quit()
-        print("WebDriver session has ended.")
-        
-    fetchAndSaveDetailInfo()
-    cleanAndUpdateHtml()
-    aiExtract()
+        if driver:
+            driver.quit()
+        logging.info("WebDriver session has ended.")
+    
+    # Each of these functions should have their own error handling as well.
+    try:
+        fetchAndSaveDetailInfo()
+    except Exception as e:
+        logging.error(f"Error fetching and saving detail info: {e}")
+    
+    try:
+        cleanAndUpdateHtml()
+    except Exception as e:
+        logging.error(f"Error cleaning and updating HTML: {e}")
+    
+    try:
+        aiExtract()
+    except Exception as e:
+        logging.error(f"Error in AI extraction: {e}")
+    
+    try:
+        aiExtractBackup()
+    except Exception as e:
+        logging.error(f"Error in AI backup extraction: {e}")
 
 if __name__ == "__main__":
     main()

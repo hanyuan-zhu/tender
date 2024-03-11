@@ -1,7 +1,8 @@
 import mysql.connector
 from mysql.connector import Error
 import datetime
-from config import DB_CONFIG, TENDER_INFO_TABLE_NAME, TENDER_DETAIL_HTML_TABLE_NAME
+from config import DB_CONFIG, TENDER_INFO_TABLE_NAME, TENDER_DETAIL_HTML_TABLE_NAME,TENDER_DETAIL_TABLE_NAME
+import logging
 
 def connect_db():
     try:
@@ -13,7 +14,7 @@ def connect_db():
         return None
 
 ############################################################################################################
-# 以下函数用于crawl_index.py：
+# 以下函数用于crawlIndex.py：
 # - check_existence
 # - insert_data
 ############################################################################################################
@@ -27,7 +28,7 @@ def insert_data(cursor, data):
     cursor.execute(insert_query, data)
 
 ############################################################################################################
-# 以下函数用于crawl_detail.py：
+# 以下函数用于crawlDetail.py：
 # - get_unfetched_tender_info
 # - insert_detail_html
 # - update_fetched_status
@@ -72,7 +73,7 @@ def update_fetched_status(cursor, tender_id):
     cursor.execute(update_query, (tender_id,))
 
 ############################################################################################################
-# 以下函数用于clean_html.py：
+# 以下函数用于cleanHtml.py：
 # - get_uncleaned_html_records
 # - update_cleaned_html
 ############################################################################################################
@@ -111,7 +112,7 @@ def update_cleaned_html(cursor, cleaned_html, id):
     cursor.execute(update_query, (cleaned_html, id))
 
 ############################################################################################################
-# 以下函数用于ai_extract.py：
+# 以下函数用于aiExtract.py：
 # - get_all_cleaned_htmls_to_extract
 # - insert_data_into_tender_detail
 # - update_last_extracted_time
@@ -153,7 +154,7 @@ def insert_data_into_tender_detail(data):
 
         fields = ', '.join(data.keys())
         values = ', '.join(['%s'] * len(data))
-        insert_query = f"INSERT INTO tender_detail ({fields}) VALUES ({values})"
+        insert_query = f"INSERT INTO {TENDER_DETAIL_TABLE_NAME} ({fields}) VALUES ({values})"
 
         with db.cursor() as cursor:
             cursor.execute(insert_query, list(data.values()))
@@ -163,29 +164,7 @@ def insert_data_into_tender_detail(data):
 
 def update_last_extracted_time(db,cursor, tender_id):
     now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    update_sql = "UPDATE tender_detail_html SET last_extracted_time = %s WHERE tender_id = %s"
+    update_sql = f"UPDATE {TENDER_DETAIL_HTML_TABLE_NAME} SET last_extracted_time = %s WHERE tender_id = %s"
     cursor.execute(update_sql, (now, tender_id))
     db.commit()
-
-# def insert_detail_data(data):
-#     """
-#     将招标详细信息插入到数据库中。
-#     参数:
-#     - data: 要插入的数据，预期为一个元组，包含所有必要的招标详细信息字段。
-#     """
-#     connection = connect_db()
-#     if connection is not None:
-#         try:
-#             cursor = connection.cursor()
-#             insert_query = f"""
-#             INSERT INTO {TENDER_DETAIL_HTML_TABLE_NAME} (tender_id, tender_document_start_time, tender_document_end_time, question_deadline, answer_announcement_time, bid_submission_deadline, bid_opening_time, tenderer, tender_contact, contact_phone, tender_agency, tender_agency_contact, tender_agency_contact_phone, supervision_qualification_requirement, business_license_requirement, chief_supervisor_qualification_requirement, consortium_bidding_requirement, project_name, investment_project_code, tender_project_name, implementation_site, funding_source, tender_scope_and_scale, duration, maximum_bid_price, qualification_review_method)
-#             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-#             """
-#             cursor.execute(insert_query, data)
-#             connection.commit()
-#         except Error as e:
-#             print(f"Error: {e}")
-#             connection.rollback()
-#         finally:
-#             cursor.close()
-#             connection.close()
+    logging.info(f"更新 tender_id 为 {tender_id} 的最后提取时间")
