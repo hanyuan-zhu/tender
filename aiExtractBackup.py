@@ -1,3 +1,5 @@
+# Description: 从数据库中获取所有未提取或需要重新提取信息的HTML，使用AI提取招标详细信息，并将提取的信息插入到数据库中。
+
 from zhipuai import ZhipuAI
 from database_util import connect_db,get_all_cleaned_htmls_to_extract,update_last_extracted_time,insert_data_into_tender_detail
 import json

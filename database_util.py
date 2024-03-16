@@ -168,3 +168,55 @@ def update_last_extracted_time(db,cursor, tender_id):
     cursor.execute(update_sql, (now, tender_id))
     db.commit()
     logging.info(f"更新 tender_id 为 {tender_id} 的最后提取时间")
+    
+############################################################################################################
+# 以下函数用于tenderLabeling.py：
+# - get_tender_title
+# - get_announcement_types
+# - insert_into_announcement_labels
+############################################################################################################
+    
+
+def get_tender_title(cursor):
+    """
+    从数据库中获取所有未被标记的招标标题。
+    返回值:
+    一个元组列表，每个元组包含两个元素：招标信息的ID和标题。
+    """
+
+    select_query = f"""
+    SELECT id, title
+    FROM {TENDER_INFO_TABLE_NAME}
+    WHERE id NOT IN (
+        SELECT tender_id
+        FROM announcement_labels
+    )
+    """
+    cursor.execute(select_query)
+    return cursor.fetchall()
+
+def get_announcement_types(cursor):
+    """
+    从数据库中获取所有的公告类型。
+    返回值:
+    一个字典，键是公告类型，值是对应的ID。
+    """
+
+    select_query = "SELECT id, announcement_type FROM announcement_catalog"
+    cursor.execute(select_query)
+    results = cursor.fetchall()
+    return {type: id for id, type in results}
+
+def insert_into_announcement_labels(cursor, tender_id, type_id):
+    """
+    将招标信息的类型插入到数据库中。
+    参数:
+    cursor -- 数据库游标
+    tender_id -- 招标信息的ID
+    type_id -- 公告类型的ID
+    """
+
+    insert_query = f"INSERT INTO announcement_labels (tender_id, type_id) VALUES ({tender_id}, {type_id})"
+    cursor.execute(insert_query)    
+
+

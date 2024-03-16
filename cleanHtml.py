@@ -1,3 +1,5 @@
+# Description: 清洗HTML内容，移除不必要的标签和属性
+
 from bs4 import BeautifulSoup
 from database_util import connect_db, get_uncleaned_html_records, update_cleaned_html
 import logging

@@ -1,3 +1,5 @@
+# Description: 从数据库中获取未抓取的招标信息，使用Selenium抓取详情页的HTML内容，并将抓取的内容插入数据库
+
 from database_util import connect_db,get_unfetched_tender_info,insert_detail_html,update_fetched_status
 from webdriverUtil import initDriver
 from selenium.webdriver.common.by import By

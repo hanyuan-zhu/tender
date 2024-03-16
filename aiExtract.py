@@ -1,3 +1,5 @@
+# Description: 从数据库中获取清洗后的招标公告内容，使用ZhipuAI进行提取，将提取的结果插入到tender_detail表中。
+
 from database_util import connect_db,get_all_cleaned_htmls_to_extract,insert_data_into_tender_detail,update_last_extracted_time
 from zhipuai import ZhipuAI
 import json

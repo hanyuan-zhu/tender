@@ -1,3 +1,5 @@
+# 这个脚本用于爬取网站的索引页面。
+
 from database_util import connect_db, check_existence, insert_data
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
