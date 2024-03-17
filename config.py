@@ -1,7 +1,9 @@
 # 配置信息
 # CHROMEDRIVER_PATH = '/opt/homebrew/bin/chromedriver'
-CHROMEDRIVER_PATH = '/usr/local/bin/chromedriver' #  这个是sele服务器的chromedriver地址
+# CHROMEDRIVER_PATH = '/usr/local/bin/chromedriver' #  这个是sele服务器的chromedriver地址
 # 记得一定要配置当前环境 chromedriver 的路径，用 "which chromedriver"找到
+import os
+CHROMEDRIVER_PATH = os.getenv('CHROMEDRIVER_PATH')
 
 HEADLESS = True
 WEBPAGE_URL = "http://deal.ggzy.gov.cn/ds/deal/dealList.jsp?HEADER_DEAL_TYPE=01"
