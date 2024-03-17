@@ -131,14 +131,18 @@ def get_all_cleaned_htmls_to_extract(cursor):
     # 例如，你可以设置为 "last_extracted_time IS NULL OR last_extracted_time < DATE_SUB(NOW(), INTERVAL 1 DAY)"
     # 来获取所有没有提取过，或者最后提取时间早于当前时间24小时的记录
     # select_query = f"""
-    # SELECT tender_id, cleaned_detail_html
-    # FROM {TENDER_DETAIL_HTML_TABLE_NAME}
-    # WHERE last_extracted_time IS NULL OR last_extracted_time < YOUR_CONDITION_WITH_SPECIFIC_TIME
+    # SELECT t.tender_id, t.cleaned_detail_html
+    # FROM {TENDER_DETAIL_HTML_TABLE_NAME} t
+    # JOIN announcement_labels al ON t.tender_id = al.tender_id
+    # WHERE (t.last_extracted_time IS NULL OR t.last_extracted_time < DATE_SUB(NOW(), INTERVAL 1 DAY))
+    # AND al.type_id IN (1, 2)
     # """
     select_query = f"""
-    SELECT tender_id, cleaned_detail_html
-    FROM {TENDER_DETAIL_HTML_TABLE_NAME}
-    WHERE last_extracted_time IS NULL
+    SELECT t.tender_id, t.cleaned_detail_html
+    FROM {TENDER_DETAIL_HTML_TABLE_NAME} t
+    JOIN announcement_labels al ON t.tender_id = al.tender_id
+    WHERE t.last_extracted_time IS NULL
+    AND al.type_id IN (1, 2)
     """
     cursor.execute(select_query)
     return cursor.fetchall()
