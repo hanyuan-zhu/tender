@@ -1,6 +1,6 @@
 # 配置信息
-CHROMEDRIVER_PATH = '/opt/homebrew/bin/chromedriver'
-# CHROMEDRIVER_PATH = /usr/local/bin/chromedriver #  这个是sele服务器的chromedriver地址
+# CHROMEDRIVER_PATH = '/opt/homebrew/bin/chromedriver'
+CHROMEDRIVER_PATH = '/usr/local/bin/chromedriver' #  这个是sele服务器的chromedriver地址
 # 记得一定要配置当前环境 chromedriver 的路径，用 "which chromedriver"找到
 
 HEADLESS = True
