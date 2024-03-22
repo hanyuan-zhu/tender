@@ -148,6 +148,25 @@ def get_all_cleaned_htmls_to_extract(cursor):
     return cursor.fetchall()
 
 def insert_data_into_tender_detail(data):
+    """
+    将数据插入到tender_detail表中。
+
+    参数:
+    data -- 一个字典，包含要插入的字段名和对应的值。例如：{'field1': 'value1', 'field2': 'value2'}
+
+    返回值:
+    无
+
+    使用方法:
+    1. 准备一个包含要插入的字段名和对应的值的字典。
+    2. 调用此函数，传入字典，将数据插入到tender_detail表中。
+
+    注意:
+    此函数不会检查字段名是否存在于表中，如果字段名不存在，将会导致错误。请在调用此函数前确保字段名是正确的。
+    此函数也不会检查是否有重复的记录，如果插入的数据已存在于表中，可能会导致错误。请在调用此函数前确保数据在表中是唯一的。
+    """
+
+    
     with connect_db() as db:
         if db is None:
             print("Failed to connect to the database.")

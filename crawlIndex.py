@@ -6,6 +6,11 @@ from selenium.webdriver.support.ui import WebDriverWait
 # from selenium.webdriver.support import expected_conditions as EC
 from datetime import datetime
 from selenium.common.exceptions import TimeoutException
+from webdriverUtil import initDriver, setupSearchConditions
+from config import WEBPAGE_URL
+import logging
+
+
 
 def crawlIndex(driver):
     # 等待搜索结果更新
@@ -79,4 +84,15 @@ def crawlIndex(driver):
 
 
 if __name__ == "__main__":
-    crawlIndex()
+    driver = None
+    try:
+        driver = initDriver()
+        setupSearchConditions(driver, WEBPAGE_URL)
+        crawlIndex(driver)
+    except Exception as e:
+        logging.error(f"An error occurred during web crawling: {e}")
+    finally:
+        if driver:
+            driver.quit()
+        logging.info("WebDriver session has ended.")
+
