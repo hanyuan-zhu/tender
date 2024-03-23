@@ -54,7 +54,7 @@ def tender_categorization(title):
     return response.choices[0].message.tool_calls[0].function.arguments
 
 
-def main():
+def tenderLabeling():
     db = connect_db()
     cursor = db.cursor()
 
@@ -91,4 +91,4 @@ def main():
         db.close()
 
 if __name__ == "__main__":
-    main()
+    tenderLabeling()

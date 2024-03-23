@@ -38,7 +38,7 @@ def reprocess_and_update_titles(cursor, db, titles, announcement_catalog):
     db.commit()
     
     
-def main():
+def reprocessAndUpdateOtherType():
     db=connect_db()
     cursor=db.cursor()
     try:
@@ -55,4 +55,4 @@ def main():
         db.close()
 
 if __name__ == "__main__":
-    main()
+    reprocessAndUpdateOtherType()

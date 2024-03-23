@@ -4,8 +4,10 @@ from webdriverUtil import initDriver, setupSearchConditions
 from crawlIndex import crawlIndex
 from crawlDetail import fetchAndSaveDetailInfo
 from cleanHtml import cleanAndUpdateHtml
-from aiExtract import aiExtract
-from aiExtractBackup import aiExtractBackup
+from tender.aiExtractBackup import aiExtract
+from tender.aiExtract import aiExtractBackup
+from tenderLabeling import tenderLabeling
+from reprocessAndUpdateOtherType import reprocessAndUpdateOtherType
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -33,6 +35,17 @@ def main():
         cleanAndUpdateHtml()
     except Exception as e:
         logging.error(f"Error cleaning and updating HTML: {e}")
+    
+    try:
+        tenderLabeling()
+    except Exception as e:
+        logging.error(f"Error Labeling: {e}")
+
+    try:
+        reprocessAndUpdateOtherType()
+    except Exception as e:
+        logging.error(f"Error reprocess other type: {e}")
+
     
     try:
         aiExtract()
