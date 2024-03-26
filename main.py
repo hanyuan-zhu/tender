@@ -4,8 +4,8 @@ from webdriverUtil import initDriver, setupSearchConditions
 from crawlIndex import crawlIndex
 from crawlDetail import fetchAndSaveDetailInfo
 from cleanHtml import cleanAndUpdateHtml
-from tender.aiExtractBackup import aiExtract
-from tender.aiExtract import aiExtractBackup
+from tender.aiExtractBackup import aiExtractBackup
+from tender.aiExtract import aiExtract
 from tenderLabeling import tenderLabeling
 from reprocessAndUpdateOtherType import reprocessAndUpdateOtherType
 

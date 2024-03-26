@@ -61,7 +61,7 @@ def getFormattedData(cleanedHtml):
     return formatedData
 
 
-def aiExtract():
+def aiExtractBackup():
     with connect_db() as db, db.cursor() as cursor:
         entries = get_all_cleaned_htmls_to_extract(cursor)
         logging.info(f"从数据库中获取了 {len(entries)} 条记录，准备进行AI提取。")
@@ -78,4 +78,4 @@ def aiExtract():
                     print(f"Error processing tender_id: {tender_id}, error: {str(e)}")
 
 if __name__ == "__main__":
-    aiExtract()
+    aiExtractBackup()

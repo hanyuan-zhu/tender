@@ -49,7 +49,7 @@ TENDER_INFO_TABLE_NAME = 'tender_index'
 
 # 招标详情信息(原始HTML）表，
 ## 包含“招标ID、招标标题、发布时间、原文链接、原始HTML内容、已清洗HTML内容、最后提取时间”
-TENDER_DETAIL_HTML_TABLE_NAME = 'tender_detail_html'
+TENDER_DETAIL_HTML_TABLE_NAME = 'tender_detail_html_temp'
 # 对应的数据库表结构如下：
 # +----------------------+--------------+------+-----+---------+----------------+
 # | Field                | Type         | Null | Key | Default | Extra          |
@@ -66,7 +66,7 @@ TENDER_DETAIL_HTML_TABLE_NAME = 'tender_detail_html'
 
 # 招标详情信息表 
 # 结构化提取后的招标详情信息表，
-TENDER_DETAIL_TABLE_NAME = 'tender_detail'
+TENDER_DETAIL_TABLE_NAME = 'tender_detail_temp'
 # TENDER_DETAIL_TABLE_NAME = 'tender_detail_temp' ## backup_plan 用的测试表
 
 # 公告类型目录表，
