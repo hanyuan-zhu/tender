@@ -11,81 +11,64 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 def extract_detail_from_html(html):
 
     client = ZhipuAI(api_key="e6af334544b37a85e83900a9152eb9a0.GzjnBTUhPOhDDJhx")
-    
+
     tools = [{
         "type": "function",
         "function": {
             "name": "get_tender_detail",
-            "description": "将招标详细信息插入到数据库中",
+            "description": "提取招标公告中的重点信息，如项目名称、项目地点、施工内容与监理范围等",
             "parameters": {
-                "type": "object",
-                "properties": {
-                    "project_name": {"description": "项目名称", "type": "string"},
-                    "investment_project_code": {"description": "项目的唯一代码", "type": "string"},
-                    "tender_project_name": {"description": "招标项目名称", "type": "string"},
-                    "implementation_site": {"description": "具体的项目实施地点", "type": "string"},
-                    "funding_source": {"description": "项目资金的来源说明", "type": "string"},
-                    "tender_scope_and_scale": {"description": "详细的范围和规模描述，包括建筑面积、总投资额。", "type": "string"},
-                    "duration": {"description": "工程预计完成时间（日历天，月份，或起始和终止日期）", "type": "string"},
-                    "maximum_bid_price": {"description": "招标价格和费率：招标价格或最高价格限制，必须标明单位（例如，100万元），以及收费系数或报价费率是百分比（例如，80%）", "type": "string"},
-                    "business_license_requirement": {"description": "必要的营业执照说明", "type": "string"},
-                    "supervision_qualification_requirement": {"description": "资质类型和资质最低等级要求", "type": "string"},
-                    "chief_supervisor_qualification_requirement": {"description": "总监资格要求，包括但不限于资格证书专业，职称最低要求，学历最低要求，总监业绩要求，在职项目限制等等。", "type": "string"},
-                    "consortium_bidding_requirement": {"description": "关于联合体投标的具体要求", "type": "string"},
-                    "qualification_review_method": {"description": "资格审查的具体方法", "type": "string"},
-                    "tenderer": {"description": "招标方的名称", "type": "string"},
-                    "tender_contact": {"description": "招标方的联系人姓名", "type": "string"},
-                    "contact_phone": {"description": "联系人的电话号码", "type": "string"},
-                    "tender_agency": {"description": "被委托的招标代理机构名称", "type": "string"},
-                    "tender_agency_contact": {"description": "招标代理的联系人姓名", "type": "string"},
-                    "tender_agency_contact_phone": {"description": "招标代理联系人的电话号码", "type": "string"},
-                    "tender_document_start_time": {"description": "获取招标文件截止时间", "type": "string"},
-                    "tender_document_end_time": {"description": "获取招标文件截止时间以年月日时分表示", "type": "string"},
-                    "question_deadline": {"description": "提出疑问的截止时间以年月日时分表示", "type": "string"},
-                    "answer_announcement_time": {"description": "答疑公告的发布时间以年月日时分表示", "type": "string"},
-                    "bid_submission_deadline": {"description": "提交投标文件的截止时间以年月日时分表示", "type": "string"},
-                    "bid_opening_time": {"description": "开标仪式的具体时间以年月日时分表示", "type": "string"}
-                    },
-                "required": [
-                    'project_name',
-                    'investment_project_code',
-                    'tender_project_name',
-                    'implementation_site',
-                    'funding_source',
-                    'tender_scope_and_scale',
-                    'duration',
-                    'maximum_bid_price',
-                    'business_license_requirement',
-                    'supervision_qualification_requirement',
-                    'chief_supervisor_qualification_requirement',
-                    'consortium_bidding_requirement',
-                    'qualification_review_method',
-                    'tenderer',
-                    'tender_contact',
-                    'contact_phone',
-                    'tender_agency',
-                    'tender_agency_contact',
-                    'tender_agency_contact_phone',
-                    'tender_document_start_time',
-                    'tender_document_end_time',
-                    'question_deadline',
-                    'answer_announcement_time',
-                    'bid_submission_deadline',
-                    'bid_opening_time'
-                    ]
-                }
+            "type": "object",
+            "properties": {
+                "tender_project_name": {"description": "完整的项目名称", "type": "string"},
+                "implementation_site": {"description": "具体的项目实施地点", "type": "string"},
+                "scope_and_range": {"description": "工程项目概括及施工类型、监理服务范围", "type": "string"},
+                "gross_floor_area": {"description": "项目的总建筑面积", "type": "string"},
+                "total_investment": {"description": "项目总投资金额", "type": "string"},
+                "duration": {"description": "工程预计完成时间（日历天，月份，或起始和终止日期）", "type": "string"},
+                "bid_price": {"description": "用于表示项目监理服务费用或监理服务最高报价限制", "type": "string"},
+                "bid_price_rate": {"description": "表示计算最终监理服务费用的系数或比例，以小数表示", "type": "string"},
+                "company_qualification_requirement": {"description": "包括资质类型和资质等级要求", "type": "string"},
+                "chief_registration_certificate": {"description": "注册监理工程师资格证书专业要求", "type": "string"},
+                "chief_title_and_education": {"description": "总监的职称要求和学历要求", "type": "string"},
+                "chief_experience": {"description": "总监类似项目方面业绩要求，要求候选人至少成功监理过特定数量的相似类型工程", "type": "string"},
+                "chief_restrictions": {"description": "总监任职限制，如不允许同时监理多个项目", "type": "string"},
+                "tenderer": {"description": "招标方的名称", "type": "string"},
+                "bid_opening_time": {"description": "开标仪式的具体时间以年月日时分表示", "type": "string"}
+            },
+            "required": [
+                "tender_project_name",
+                "implementation_site",
+                "scope_and_range",
+                "gross_floor_area",
+                "total_investment",
+                "duration",
+                "bid_price",
+                "bid_price_rate",
+                "company_qualification_requirement",
+                "chief_registration_certificate",
+                "chief_title_and_education",
+                "chief_experience",
+                "chief_restrictions",
+                "tenderer",
+                "bid_opening_time"
+            ]
             }
+        }
         }]
 
     # 清空对话
     messages = []
 
-    messages.append({"role": "system", "content": """
-                     你的任务是提取以下HTML招标公告中的全部信息，并将其插入到数据库中。
-                     请注意：招标公告的所有内容都非常重要，务必涵盖所有信息，遇到不清晰的信息时，进行合理推断。
+    messages.append({"role": "assistant", "content": """
+                     你的任务是提取招标公告中的重点信息，用于将其插入到数据库中。
+                     请注意：列出的字段数据都非常重要，务必全文仔细查找，涵盖所有字段。
+                     以下是招标公告：{html}
                      """})
-    messages.append({"role": "user", "content": "下面是招标公告内容："})
-    messages.append({"role": "user", "content": html})
+    # 你的任务是提取以下HTML招标公告中的全部信息，并将其插入到数据库中。
+    # 请注意：招标公告的所有内容都非常重要，务必涵盖所有信息，遇到不清晰的信息时，进行合理推断。
+    # messages.append({"role": "user", "content": "下面是招标公告内容："})
+    # messages.append({"role": "user", "content": html})
 
 
 
@@ -94,6 +77,7 @@ def extract_detail_from_html(html):
         model="glm-4", 
         messages=messages,
         tools=tools,
+        # tool_choice="auto",
         tool_choice={"type": "function", "function": {"name": "get_tender_detail"}},
         top_p=0.7,
         temperature=0.95,
