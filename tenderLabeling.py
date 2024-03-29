@@ -16,7 +16,7 @@ def tender_categorization(title):
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "公告类型": {"description": "公告类型只能是'招标公告'、'资格审核公告'、'答疑公告'、'变更公告'、'澄清公告'和'其他'其中一个，且是唯一类型", "type": "string"}
+                    "公告类型": {"description": "公告类型只能是'招标公告'、'资格审核公告'、'答疑公告'、'变更公告'、'澄清公告'和'其他'其中一个，且是唯一类型", "type": "string","enum":['招标公告','资格审核公告','答疑公告','变更公告','澄清公告','其他']}
                     },
                 "required": [
                     '公告类型',
