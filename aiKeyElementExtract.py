@@ -374,9 +374,14 @@ def aiKeyElementExtract():
     cursor = db.cursor()
     try:
         cleaned_htmls = get_all_cleaned_htmls_to_extract_key(cursor) 
-        # 加一个log显示本次有多少个tender需要处理
         logging.info(f"Found {len(cleaned_htmls)} tenders to process.")
-        for html in cleaned_htmls[:10]:
+        #添加计算还有多少html要处理
+        count_left = len(cleaned_htmls)
+        for html in cleaned_htmls:
+            
+            count_left -= 1
+            logging.info(f"还有{count_left}个html要处理")
+            
             logging.info(f"Processing tender {html[0]}...")
             # 理论上这里 raw_data和processed_data都是 ai处理完之后的数据，都是json格式,且都没有多层级的数据，都是单一层级了。
             # raw_data的数据结构是:{"tender_id":"xxx","bid_price_value": 100, "bid_price_unit": "万元"}
