@@ -5,7 +5,7 @@ import json
 from database_util import connect_db,get_announcement_types, get_tender_title, insert_into_announcement_labels
 
 
-client = ZhipuAI(api_key="e6af334544b37a85e83900a9152eb9a0.GzjnBTUhPOhDDJhx")
+client = ZhipuAI(api_key="fd2d2655211b3a9013cf1894f944cef6.BGkirapkKYOXU1zy")
 
 def tender_categorization(title):
     tools = [{

@@ -7,7 +7,7 @@ import re
 import logging
 
 def getFormattedData(cleanedHtml):
-    client = ZhipuAI(api_key="e6af334544b37a85e83900a9152eb9a0.GzjnBTUhPOhDDJhx")
+    client = ZhipuAI(api_key="fa1467996b5f2018bcf1f49f1643cf43.908Q1sveABVE1WJc")
     response = client.chat.completions.create(
     model="glm-4", 
     messages=[

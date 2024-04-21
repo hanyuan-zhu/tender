@@ -28,8 +28,8 @@ def extract_detail_from_html(html):
     注意：这个函数依赖于ZhipuAI的API，需要提供有效的API密钥。
     """
 
-    client = ZhipuAI(api_key="e6af334544b37a85e83900a9152eb9a0.GzjnBTUhPOhDDJhx")
-    
+    client = ZhipuAI(api_key="fd2d2655211b3a9013cf1894f944cef6.BGkirapkKYOXU1zy")
+
     # template = """
     #         项目基本信息：
     #         - 项目名称 (字符串): 详细的项目名称
@@ -150,7 +150,7 @@ def detail_list_to_dict(html):
     注意：这个函数依赖于ZhipuAI的API，需要提供有效的API密钥。
     """
 
-    client = ZhipuAI(api_key="e6af334544b37a85e83900a9152eb9a0.GzjnBTUhPOhDDJhx")
+    client = ZhipuAI(api_key="fd2d2655211b3a9013cf1894f944cef6.BGkirapkKYOXU1zy")
     tools = [{
         "type": "function",
         "function": {

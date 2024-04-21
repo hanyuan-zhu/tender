@@ -4,10 +4,11 @@ from webdriverUtil import initDriver, setupSearchConditions
 from crawlIndex import crawlIndex
 from crawlDetail import fetchAndSaveDetailInfo
 from cleanHtml import cleanAndUpdateHtml
-from tender.aiExtractBackup import aiExtractBackup
-from tender.aiExtract import aiExtract
+from aiExtractBackup import aiExtractBackup
+from aiExtract import aiExtract
 from tenderLabeling import tenderLabeling
 from reprocessAndUpdateOtherType import reprocessAndUpdateOtherType
+from aiKeyElementExtract import aiKeyElementExtract
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -56,6 +57,11 @@ def main():
         aiExtractBackup()
     except Exception as e:
         logging.error(f"Error in AI backup extraction: {e}")
+        
+    try:
+        aiKeyElementExtract()
+    except Exception as e:
+        logging.error(f"Error in AI key element extraction: {e}")
 
 if __name__ == "__main__":
     main()

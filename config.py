@@ -29,7 +29,7 @@ DB_CONFIG = {
 # 数据表名
 # 招标列表信息表，
 ## 包含“招标标题、发布时间、省份、来源平台、业务类型、信息类型、行业、详情链接、是否已抓取详情信息”
-TENDER_INFO_TABLE_NAME = 'tender_index'
+TENDER_INDEX_TABLE_NAME = 'tender_index'
 # 对应的数据库表结构如下：
 # +---------------------+--------------+------+-----+---------+----------------+
 # | Field               | Type         | Null | Key | Default | Extra          |
@@ -49,7 +49,7 @@ TENDER_INFO_TABLE_NAME = 'tender_index'
 
 # 招标详情信息(原始HTML）表，
 ## 包含“招标ID、招标标题、发布时间、原文链接、原始HTML内容、已清洗HTML内容、最后提取时间”
-TENDER_DETAIL_HTML_TABLE_NAME = 'tender_detail_html_temp'
+TENDER_DETAIL_HTML_TABLE_NAME = 'tender_detail_html'
 # 对应的数据库表结构如下：
 # +----------------------+--------------+------+-----+---------+----------------+
 # | Field                | Type         | Null | Key | Default | Extra          |
@@ -66,7 +66,7 @@ TENDER_DETAIL_HTML_TABLE_NAME = 'tender_detail_html_temp'
 
 # 招标详情信息表 
 # 结构化提取后的招标详情信息表，
-TENDER_DETAIL_TABLE_NAME = 'tender_detail_temp'
+TENDER_DETAIL_TABLE_NAME = 'tender_detail'
 # TENDER_DETAIL_TABLE_NAME = 'tender_detail_temp' ## backup_plan 用的测试表
 
 # 公告类型目录表，
@@ -79,7 +79,6 @@ ANNOUNCEMENT_CATALOG_TABLE_NAME = 'announcement_catalog'
 # | id                | int(11)      | NO   | PRI | NULL    | auto_increment | # 主键，自动增长
 # | announcement_type | varchar(255) | YES  |     | NULL    |                | # 公告类型
 # +-------------------+--------------+------+-----+---------+----------------+
-
 
 # 公告类型标注表，
 ## 对应 tender_id 和 announcement_type_id 的关系

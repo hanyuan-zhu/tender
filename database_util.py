@@ -1,7 +1,7 @@
 import mysql.connector
 from mysql.connector import Error
 import datetime
-from config import DB_CONFIG, TENDER_INFO_TABLE_NAME, TENDER_DETAIL_HTML_TABLE_NAME,TENDER_DETAIL_TABLE_NAME
+from config import DB_CONFIG, TENDER_INDEX_TABLE_NAME, TENDER_DETAIL_HTML_TABLE_NAME,TENDER_DETAIL_TABLE_NAME
 import logging
 
 def connect_db():
@@ -19,11 +19,11 @@ def connect_db():
 # - insert_data
 ############################################################################################################
 def check_existence(cursor, link):
-    cursor.execute(f"SELECT COUNT(*) FROM {TENDER_INFO_TABLE_NAME} WHERE detail_link = %s", (link,))
+    cursor.execute(f"SELECT COUNT(*) FROM {TENDER_INDEX_TABLE_NAME} WHERE detail_link = %s", (link,))
     return cursor.fetchone()[0] > 0
 
 def insert_data(cursor, data):
-    insert_query = f"""INSERT INTO {TENDER_INFO_TABLE_NAME} (title, publish_time, province, source_platform, business_type, info_type, industry, detail_link)
+    insert_query = f"""INSERT INTO {TENDER_INDEX_TABLE_NAME} (title, publish_time, province, source_platform, business_type, info_type, industry, detail_link)
                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
     cursor.execute(insert_query, data)
 
@@ -45,7 +45,7 @@ def get_unfetched_tender_info(cursor):
     """
     select_query = f"""
     SELECT id, detail_link 
-    FROM {TENDER_INFO_TABLE_NAME} 
+    FROM {TENDER_INDEX_TABLE_NAME} 
     WHERE detail_info_fetched = FALSE
     """
     cursor.execute(select_query)
@@ -66,7 +66,7 @@ def insert_detail_html(cursor, data):
 
 def update_fetched_status(cursor, tender_id):
     update_query = f"""
-    UPDATE {TENDER_INFO_TABLE_NAME}
+    UPDATE {TENDER_INDEX_TABLE_NAME}
     SET detail_info_fetched = TRUE
     WHERE id = %s
     """
@@ -209,7 +209,7 @@ def get_tender_title(cursor):
 
     select_query = f"""
     SELECT id, title
-    FROM {TENDER_INFO_TABLE_NAME}
+    FROM {TENDER_INDEX_TABLE_NAME}
     WHERE id NOT IN (
         SELECT tender_id
         FROM announcement_labels
@@ -243,3 +243,70 @@ def insert_into_announcement_labels(cursor, tender_id, type_id):
     cursor.execute(insert_query)    
 
 
+############################################################################################################
+# 以下函数用于aiKeyElementExtract.py：
+# get_all_cleaned_htmls_to_extract_key
+# insert_data_into_db
+############################################################################################################
+
+def get_all_cleaned_htmls_to_extract_key(cursor):
+    # 获取已经处理过的tender_id
+    cursor.execute("SELECT tender_id FROM raw_tender_key_detail")
+    existing_tender_ids = [row[0] for row in cursor.fetchall()]
+    # 创建一个字符串，其中包含与元组中的元素数量相同的占位符
+    placeholders = ', '.join(['%s'] * len(existing_tender_ids))
+    # 查询满足特定条件且不在这两个表中的tender_id
+    query = f"""
+        SELECT t.tender_id, t.cleaned_detail_html
+        FROM {TENDER_DETAIL_HTML_TABLE_NAME} t
+        JOIN announcement_labels al ON t.tender_id = al.tender_id
+        WHERE al.type_id IN (1, 2) AND t.tender_id NOT IN ({placeholders})
+        ORDER BY t.tender_id DESC
+    """
+    cursor.execute(query, tuple(existing_tender_ids))
+    result = cursor.fetchall()
+    return result
+
+
+def insert_data_into_db(db, cursor, raw_data, processed_data):
+    """Insert processed data into the database using the provided cursor. Handle reconnection if necessary."""
+    try:
+        insert_into_raw_tender_key_detail(cursor, raw_data)
+        insert_into_tender_key_detail(cursor, processed_data)
+        db.commit()
+    except Exception as e:
+        logging.error(f"Database insert failed: {e}")
+        # Attempt to reconnect
+        db = connect_db()
+        if db is not None:
+            new_cursor = db.cursor()
+            logging.debug("Database reconnected, returning new db and cursor.")
+            return (db, new_cursor)
+        else:
+            logging.debug("Reconnection failed, returning None, None.")
+            return (None, None)
+    logging.debug("Data inserted successfully, returning db and cursor.")
+    return (db, cursor)
+
+        
+def insert_into_raw_tender_key_detail(cursor,raw_tender_dict):
+    raw_tender_dict = remove_invalid_keys(cursor, raw_tender_dict, "raw_tender_key_detail")
+    keys = ', '.join(raw_tender_dict.keys())
+    values = ', '.join(['%s'] * len(raw_tender_dict))
+    sql = f"INSERT INTO raw_tender_key_detail ({keys}) VALUES ({values})"
+    cursor.execute(sql, list(raw_tender_dict.values()))
+
+def insert_into_tender_key_detail(cursor,post_processed_dict):
+    post_processed_dict = remove_invalid_keys(cursor, post_processed_dict, "tender_key_detail")
+    keys = ', '.join(post_processed_dict.keys())
+    values = ', '.join(['%s'] * len(post_processed_dict))
+    sql = f"INSERT INTO tender_key_detail ({keys}) VALUES ({values})"
+    cursor.execute(sql, list(post_processed_dict.values()))
+    
+def get_column_names(cursor, table_name):
+    cursor.execute(f"SHOW COLUMNS FROM {table_name}")
+    return [column[0] for column in cursor.fetchall()]
+
+def remove_invalid_keys(cursor, data_dict, table_name):
+    column_names = get_column_names(cursor, table_name)
+    return {key: value for key, value in data_dict.items() if key in column_names}
