@@ -7,7 +7,7 @@ import re
 import logging
 
 def getFormattedData(cleanedHtml):
-    client = ZhipuAI(api_key="fa1467996b5f2018bcf1f49f1643cf43.908Q1sveABVE1WJc")
+    client = ZhipuAI(api_key="fd2d2655211b3a9013cf1894f944cef6.BGkirapkKYOXU1zy")
     response = client.chat.completions.create(
     model="glm-4", 
     messages=[
@@ -64,7 +64,7 @@ def getFormattedData(cleanedHtml):
 def aiExtractBackup():
     with connect_db() as db, db.cursor() as cursor:
         entries = get_all_cleaned_htmls_to_extract(cursor)
-        logging.info(f"从数据库中获取了 {len(entries)} 条记录，准备进行AI提取。")
+        logging.info(f"从数据库中获取了 {len(entries)} 条记录，准备进行AI提取，by aiExtractBackup.py。")
 
         for tender_id, cleaned_html in entries:
             if cleaned_html:

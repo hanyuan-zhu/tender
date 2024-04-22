@@ -30,41 +30,6 @@ def extract_detail_from_html(html):
 
     client = ZhipuAI(api_key="fd2d2655211b3a9013cf1894f944cef6.BGkirapkKYOXU1zy")
 
-    # template = """
-    #         项目基本信息：
-    #         - 项目名称 (字符串): 详细的项目名称
-    #         - 投资项目代码 (字符串): 项目的唯一代码
-    #         - 招标项目名称 (字符串): 招标的详细名称
-    #         - 实施地点 (字符串): 具体的项目实施地点
-    #         - 资金来源 (字符串): 项目资金的来源说明
-    #         - 招标范围及规模 (文本): 详细的范围和规模描述
-    #         - 工期 (字符串): 工程预计完成时间
-    #         - 最高投标限价 (浮点数): 投标的最高价格限制
-    #         - 资格审查方式 (字符串): 资格审查的具体方法
-    #         投标人资格要求：
-    #         - 监理资质要求 (文本): 监理相关的资质要求
-    #         - 营业执照要求 (文本): 必要的营业执照说明
-    #         - 总监理工程师资格要求 (文本): 总监理工程师的资格条件
-    #         - 联合体投标要求 (文本): 关于联合体投标的具体要求
-    #         招标人和投标人信息：
-    #         - 招标人 (字符串): 招标方的名称
-    #         - 招标人联系人 (字符串): 招标方的联系人姓名
-    #         - 联系电话 (字符串): 联系人的电话号码
-    #         - 招标代理机构 (字符串): 被委托的招标代理机构名称
-    #         - 招标代理联系人 (字符串): 招标代理的联系人姓名
-    #         - 招标代理联系电话 (字符串): 招标代理联系人的电话号码
-    #         投标时间表信息：
-    #         - 获取招标文件开始时间 (字符串): 开始时间以年月日时分表示
-    #         - 获取招标文件截止时间 (字符串): 截止时间以年月日时分表示
-    #         - 提疑截止时间 (字符串): 提出疑问的截止时间以年月日时分表示
-    #         - 答疑公告时间 (字符串): 答疑公告的发布时间以年月日时分表示
-    #         - 递交投标文件截止时间 (字符串): 提交投标文件的截止时间以年月日时分表示
-    #         - 开标时间 (字符串): 开标仪式的具体时间以年月日时分表示
-
-    #         其他信息：
-    #         - (待补充新字段...)
-    #         """
-
     template = """
             重点信息：
             - 项目名称tender_project_name: 详细的项目名称
@@ -115,9 +80,7 @@ def extract_detail_from_html(html):
 
     messages.append({"role": "system", "content": template})
     
-    messages.append({"role": "user", "content": "下面是招标公告内容："})
-
-    messages.append({"role": "user", "content": html})
+    messages.append({"role": "user", "content": "下面是招标公告内容："+ html})
 
 
 
@@ -224,10 +187,7 @@ def detail_list_to_dict(html):
                      你的任务是将下面的招标公告的内容，用tools逐项填入数据库表格中。
                      注意：每一条数据内容都非常重要，请你务必仔细阅读，并完整填写。
                      """})
-    messages.append({"role": "user", "content":"""
-                    下面是"招标公告"内容:
-                    """})
-    messages.append({"role": "user", "content": html})
+    messages.append({"role": "user", "content":" 下面是'招标公告'内容: " + html})
 
     response = client.chat.completions.create(
         model="glm-4", 
@@ -274,7 +234,7 @@ def aiExtract():
 
     # 获取所有未提取或需要重新提取信息的HTML
     entries = get_all_cleaned_htmls_to_extract(cursor)
-    logging.info(f"从数据库中获取了 {len(entries)} 条记录，进行AI提取, by aiExtractBackup.py.")
+    logging.info(f"从数据库中获取了 {len(entries)} 条记录，进行AI提取, by aiExtract.py.")
 
     for entry in entries:
         logging.info(f"正在处理第 {entry[0]} 条记录")
