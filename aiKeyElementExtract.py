@@ -15,8 +15,7 @@ def convert_list_to_string(lst):
 def extract_detail_from_html(html):
     client = ZhipuAI(api_key="fd2d2655211b3a9013cf1894f944cef6.BGkirapkKYOXU1zy")
     messages = []
-    messages.append({"role": "user", "content": """用json格式整理下面是招标公告HTML信息 :"""})
-    messages.append({"role": "user", "content": html})
+    messages.append({"role": "user", "content": "用json格式整理下面是招标公告HTML信息 :" + html})
     messages.append({"role": "user", "content": "至少包含下列信息："})
     messages.append({"role": "user", "content": """
                      招标价格，包含金额数值和单位，输出
